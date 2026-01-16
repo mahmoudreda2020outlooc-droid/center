@@ -3,7 +3,7 @@
 مشروع منصة تعليمية لطلاب معادلة كلية التجارة.
 
 ## 🚀 رابط الموقع
-[اضغط هنا لفتح الموقع](https://mahmoudreda2020outlooc-droid.github.io/center/)
+[اضغط هنا لفتح الموقع](https://mahmoudreda2020outlooc-droid.github.io/ELMOHASEB---ACADEMY./)
 
 ---
 
