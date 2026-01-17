@@ -82,11 +82,13 @@
     </nav>
 
     <div class="container">
-        // --- Dashboard Tabs ---
+        <!-- Dashboard Tabs -->
         <div
             style="display:flex; justify-content:center; flex-wrap: wrap; margin-bottom: 2rem; border-bottom: 2px solid #ddd;">
             <button class="tab-btn active" onclick="switchTab('content-tab', event)">📚 إدارة المحتوى</button>
             <button class="tab-btn" onclick="switchTab('users-tab', event)">👥 إدارة الطلاب</button>
+            <button id="master-admin-btn" class="tab-btn" onclick="switchTab('admins-tab', event)">🔑 إدارة
+                المسؤولين</button>
             <button class="tab-btn" onclick="switchTab('logs-tab', event)">🔔 سجل الحماية</button>
         </div>
 
@@ -181,7 +183,7 @@
                         <input type="text" id="newPassword" placeholder="مثال: 123456" required>
                     </div>
                     <button type="submit" class="btn btn-primary" style="background:#28a745; width:100%;">إنشاء
-                        حساب</button>
+                        حساب طالب</button>
                 </form>
 
                 <div class="preview-list">
@@ -193,6 +195,34 @@
                             oninput="filterUserList()">
                     </div>
                     <div id="userList"></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ADMINS TAB -->
+        <div id="admins-tab" class="admin-tab" style="display:none;">
+            <div class="admin-container">
+                <h2>إضافة مسؤول (Admin) جديد</h2>
+                <form id="addAdminForm">
+                    <div class="form-group">
+                        <label>الاسم الكامل</label>
+                        <input type="text" id="adminFullName" placeholder="مثال: م . محمود رضا" required>
+                    </div>
+                    <div class="form-group">
+                        <label>اسم المستخدم (للدخول)</label>
+                        <input type="text" id="adminUsername" placeholder="مثال: admin_mah" required>
+                    </div>
+                    <div class="form-group">
+                        <label>كلمة المرور</label>
+                        <input type="text" id="adminPassword" placeholder="مثال: adm@123" required>
+                    </div>
+                    <button type="submit" class="btn btn-primary" style="background:#dc3545; width:100%;">إنشاء حساب
+                        مسؤول</button>
+                </form>
+
+                <div class="preview-list">
+                    <h3>قائمة المسؤولين (Admins)</h3>
+                    <div id="adminList"></div>
                 </div>
             </div>
         </div>
@@ -305,14 +335,26 @@
     <script src="js/appwrite-config.js?v=1.1"></script>
     <script src="js/db-appwrite.js?v=1.1"></script>
     <script>
-        // --- Tab Logic ---
         function switchTab(tabId, event) {
+            // Security Check for Admins Tab
+            const isMaster = localStorage.getItem('is_master_admin') === 'true';
+
+            if (tabId === 'admins-tab' && !isMaster) {
+                const code = prompt("🔑 يرجى إدخال الكود السري للوصول لإدارة المسؤولين:");
+                if (code !== '963') {
+                    alert("❌ الكود خاطئ! لا يمكنك الدخول.");
+                    return;
+                }
+            }
+
             document.querySelectorAll('.admin-tab').forEach(t => t.style.display = 'none');
             document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
 
-            document.getElementById(tabId).style.display = 'block';
-            if (event && event.target) {
-                event.target.classList.add('active');
+            const targetTab = document.getElementById(tabId);
+            if (targetTab) targetTab.style.display = 'block';
+
+            if (event && (event.currentTarget || event.target)) {
+                (event.currentTarget || event.target).classList.add('active');
             }
         }
 
@@ -433,11 +475,43 @@
         let allUsers = []; // Global to store users for filtering
 
         async function renderUserList() {
-            const list = document.getElementById('userList');
+            const userListEl = document.getElementById('userList');
+            const adminListEl = document.getElementById('adminList');
             try {
                 allUsers = await window.dbUserGetAll();
-                filterUserList(); // Initial render
+                filterUserList(); // Initial render for students
+                renderAdminList(); // Initial render for admins
             } catch (e) { console.error("User DB Error:", e); }
+        }
+
+        function renderAdminList() {
+            const list = document.getElementById('adminList');
+            list.innerHTML = '';
+
+            const admins = allUsers.filter(u => u.role === 'admin');
+
+            if (admins.length === 0) {
+                list.innerHTML = '<p style="text-align:center; color:#999;">لا يوجد مسؤولين مضافين حالياً.</p>';
+                return;
+            }
+
+            admins.slice().reverse().forEach((user) => {
+                const div = document.createElement('div');
+                div.className = 'preview-item';
+                div.style.borderRight = '4px solid #dc3545';
+                div.innerHTML = `
+                    <div style="display:flex; flex-direction:column;">
+                        <div>
+                            <strong>${user.username}</strong>
+                            <span style="font-size:0.8rem; color:#666; margin-right:5px;">${user.password}</span>
+                            <span style="font-size:0.75rem; background:#ffebee; color:#c62828; padding:2px 6px; border-radius:10px; font-weight:bold;">Admin</span>
+                        </div>
+                        <div style="font-size:0.85rem; color:#444;">${user.firstName || user.username}</div>
+                    </div>
+                    <button class="delete-btn" onclick="deleteUser(${user.id})" title="حذف مسؤول">🗑️</button>
+                `;
+                list.appendChild(div);
+            });
         }
 
         function filterUserList() {
@@ -446,18 +520,19 @@
 
             list.innerHTML = '';
 
-            const filteredUsers = allUsers.filter(user => {
+            const filteredStudents = allUsers.filter(user => {
+                if (user.role === 'admin') return false; // Exclude admins from student list
                 const fullName = `${user.firstName || ''} ${user.lastName || ''}`.toLowerCase();
                 const username = (user.username || '').toLowerCase();
                 return fullName.includes(query) || username.includes(query);
             });
 
-            if (filteredUsers.length === 0) {
+            if (filteredStudents.length === 0) {
                 list.innerHTML = '<p style="text-align:center; color:#999;">لا يوجد طلاب يطابقون البحث.</p>';
                 return;
             }
 
-            filteredUsers.slice().reverse().forEach((user) => {
+            filteredStudents.slice().reverse().forEach((user) => {
                 const isSuspended = user.isSuspended === true;
                 const statusColor = isSuspended ? 'red' : 'green';
                 const statusText = isSuspended ? 'معطل' : 'نشط';
@@ -701,6 +776,12 @@
                     debugDiv.style.color = 'red';
                 }
             }
+            // Initialize Page
+            const isMaster = localStorage.getItem('is_master_admin') === 'true';
+            if (isMaster) {
+                const btn = document.getElementById('master-admin-btn');
+                if (btn) btn.style.display = 'inline-block';
+            }
 
             toggleSource();
             renderList();
@@ -716,6 +797,7 @@
                 }
             }, 5000);
         });
+
 
         document.getElementById('uploadForm').addEventListener('submit', async (e) => {
             e.preventDefault();
@@ -787,14 +869,48 @@
                     email: email,
                     username: username,
                     password: password, // In real app, hash this!
+                    role: 'student',
                     createdAt: new Date().toISOString()
                 });
                 e.target.reset();
                 renderUserList();
                 alert('✅ تم إنشاء الحساب للطالب: ' + username);
-            } catch (err) {
-                // Error already handled by dbUserAdd
+            } catch (err) { }
+        });
+
+        document.getElementById('addAdminForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+
+            const isMaster = localStorage.getItem('is_master_admin') === 'true';
+            if (!isMaster) {
+                const code = prompt("🚨 إجراء أمني: يرجى إدخال الكود السري لإتمام عملية إضافة مسؤول جديد:");
+                if (code !== '963') {
+                    alert("❌ الكود خاطئ! لا يمكنك تنفيذ هذا الإجراء.");
+                    return;
+                }
             }
+
+            const fullName = document.getElementById('adminFullName').value.trim();
+            const username = document.getElementById('adminUsername').value.trim();
+            const password = document.getElementById('adminPassword').value.trim();
+
+            if (username.length < 3) return alert("اسم المستخدم قصير جداً");
+
+            try {
+                await window.dbUserAdd({
+                    id: Date.now(),
+                    firstName: fullName,
+                    lastName: '',
+                    email: username + '@admin.com',
+                    username: username,
+                    password: password,
+                    role: 'admin',
+                    createdAt: new Date().toISOString()
+                });
+                e.target.reset();
+                renderUserList();
+                alert('✅ تم إضافة المسؤول بنجاح: ' + username);
+            } catch (err) { }
         });
     </script>
 </body>

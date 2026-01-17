@@ -326,7 +326,8 @@
                     { k: 'isSuspended', t: 'boolean', ex: { required: false, default: false } },
                     { k: 'isActive', t: 'boolean', ex: { required: false, default: true } },
                     { k: 'deviceId', t: 'string', ex: { size: 255, required: false } },
-                    { k: 'avatar', t: 'string', ex: { size: 1000, required: false } }
+                    { k: 'avatar', t: 'string', ex: { size: 1000, required: false } },
+                    { k: 'role', t: 'string', ex: { size: 50, required: false, default: 'student' } }
                 ];
                 for (const a of uAttrs) { await createAttribute(actualDbId, COLLECTIONS.USERS, a.k, a.t, a.ex); }
 

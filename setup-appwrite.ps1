@@ -76,6 +76,7 @@ try {
         @{ key = "isActive"; type = "boolean"; required = $false; default = $true }
         @{ key = "deviceId"; type = "string"; size = 255; required = $false }
         @{ key = "avatar"; type = "string"; size = 1000; required = $false }
+        @{ key = "role"; type = "string"; size = 50; required = $false; default = "student" }
     )
     foreach ($a in $userAttrs) { Ensure-Attribute $DatabaseID "users" $a }
 

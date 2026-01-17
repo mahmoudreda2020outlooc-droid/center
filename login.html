@@ -102,6 +102,7 @@
                 // 1. Check if Admin
                 if (usernameInput === ADMIN_USER && password === ADMIN_PASS) {
                     localStorage.setItem('user_role', 'admin');
+                    localStorage.setItem('is_master_admin', 'true');
                     localStorage.setItem('user_email', 'admin@center.com');
                     window.location.href = 'admin.html';
                     return;
@@ -113,13 +114,27 @@
                 }
 
                 const user = await window.dbUserLogin(usernameInput, password);
+                console.log("Login check result:", user);
 
                 if (user) {
                     if (user.isSuspended) {
                         throw new Error("⛔ تم تعطيل هذا الحساب. يرجى مراجعة الإدارة.");
                     }
 
-                    // Device Check logic
+                    // Check if Admin by Role
+                    const isRoleAdmin = user.role === 'admin';
+
+                    if (isRoleAdmin) {
+                        localStorage.setItem('user_role', 'admin');
+                        localStorage.setItem('is_master_admin', 'false');
+                        localStorage.setItem('user_display_name', `${user.firstName || ''} ${user.lastName || ''}`.trim() || user.username);
+                        localStorage.setItem('user_email', user.email || (user.username + '@admin.com'));
+                        localStorage.setItem('admin_user', JSON.stringify(user));
+                        window.location.href = 'admin.html';
+                        return;
+                    }
+
+                    // Device Check logic for Students
                     const currentDevice = getDeviceFingerprint();
 
                     if (user.deviceId) {

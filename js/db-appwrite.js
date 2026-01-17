@@ -132,7 +132,8 @@ window.dbUserLogin = async (username, password) => {
             // Map Appwrite attributes to match expectations if needed
             return {
                 ...user,
-                id: user.id || parseInt(user.$id) || user.$id // Fallback for ID handling
+                id: user.id || parseInt(user.$id) || user.$id, // Fallback for ID handling
+                role: user.role || 'student'
             };
         }
         return null;
@@ -192,7 +193,8 @@ window.dbUserAdd = async (user) => {
             isSuspended: user.isSuspended || false,
             isActive: true, // Schema requires this
             deviceId: user.deviceId || null,
-            avatar: user.avatar || null
+            avatar: user.avatar || null,
+            role: user.role || 'student'
         };
         await databases.createDocument(DB_ID, COLLECTIONS.USERS, docId, data);
         return user;
