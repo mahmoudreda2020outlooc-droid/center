@@ -3,9 +3,10 @@
   "short_name": "Elmohaseb",
   "start_url": "./index.html",
   "display": "standalone",
-  "background_color": "#fafafa",
-  "theme_color": "#fafafa",
+  "background_color": "#0d47a1",
+  "theme_color": "#0d47a1",
   "orientation": "portrait",
+  "scope": "./",
   "icons": [
     {
       "src": "img/logo.jpg",

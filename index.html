@@ -7,6 +7,13 @@
     <title>منصة المحاسب التعليمية - v3.1</title>
     <link rel="icon" href="img/logo.jpg" type="image/jpeg">
     <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+    <link rel="manifest" href="manifest.json">
+    <meta name="theme-color" content="#0d47a1">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="Elmohaseb">
+    <link rel="apple-touch-icon" href="img/logo.jpg">
 
     <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800;900&display=swap" rel="stylesheet">
     <style>
@@ -337,6 +344,90 @@
                 background-position: 200% center;
             }
         }
+
+        /* --- Install Banner Styles --- */
+        #install-banner {
+            position: fixed;
+            bottom: 20px;
+            left: 20px;
+            right: 20px;
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            padding: 15px 20px;
+            border-radius: 16px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.15);
+            display: none;
+            align-items: center;
+            justify-content: space-between;
+            z-index: 9999;
+            border: 1px solid rgba(13, 71, 161, 0.1);
+            animation: slideUp 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+
+        @keyframes slideUp {
+            from {
+                transform: translateY(100px);
+                opacity: 0;
+            }
+
+            to {
+                transform: translateY(0);
+                opacity: 1;
+            }
+        }
+
+        .install-content {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            text-align: right;
+        }
+
+        .install-img {
+            width: 45px;
+            height: 45px;
+            border-radius: 10px;
+        }
+
+        .install-text h4 {
+            margin: 0;
+            font-size: 0.95rem;
+            color: var(--primary);
+            font-weight: 800;
+        }
+
+        .install-text p {
+            margin: 0;
+            font-size: 0.75rem;
+            color: #666;
+        }
+
+        .install-actions {
+            display: flex;
+            gap: 8px;
+        }
+
+        .btn-install-now {
+            background: var(--primary);
+            color: white;
+            border: none;
+            padding: 8px 15px;
+            border-radius: 8px;
+            font-weight: 700;
+            font-size: 0.85rem;
+            cursor: pointer;
+        }
+
+        .btn-install-close {
+            background: #eee;
+            color: #555;
+            border: none;
+            padding: 8px 12px;
+            border-radius: 8px;
+            font-weight: 700;
+            font-size: 0.85rem;
+            cursor: pointer;
+        }
     </style>
 </head>
 
@@ -403,7 +494,67 @@
             localStorage.setItem('platform_v', CURRENT_VERSION);
             // Optional: unregister service workers if used
         }
+
+        // --- PWA Logic ---
+        let deferredPrompt;
+        const installBanner = document.getElementById('install-banner');
+
+        // Register Service Worker
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', () => {
+                navigator.serviceWorker.register('./service-worker.js')
+                    .then(reg => console.log('SW Registered', reg))
+                    .catch(err => console.log('SW Failed', err));
+            });
+        }
+
+        // Handle Installation Prompt
+        window.addEventListener('beforeinstallprompt', (e) => {
+            e.preventDefault();
+            deferredPrompt = e;
+
+            // Only show if not already dismissed in this session
+            if (!sessionStorage.getItem('installDismissed')) {
+                setTimeout(() => {
+                    installBanner.style.display = 'flex';
+                }, 3000); // Show after 3 seconds
+            }
+        });
+
+        function installApp() {
+            if (!deferredPrompt) return;
+            installBanner.style.display = 'none';
+            deferredPrompt.prompt();
+            deferredPrompt.userChoice.then((choiceResult) => {
+                if (choiceResult.outcome === 'accepted') {
+                    console.log('User accepted the install prompt');
+                } else {
+                    console.log('User dismissed the install prompt');
+                }
+                deferredPrompt = null;
+            });
+        }
+
+        function closeInstallBanner() {
+            installBanner.style.display = 'none';
+            sessionStorage.setItem('installDismissed', 'true');
+        }
     </script>
+
+    <!-- Install App Banner -->
+    <div id="install-banner">
+        <div class="install-content">
+            <img src="img/logo.jpg" alt="Logo" class="install-img">
+            <div class="install-text">
+                <h4>تثبيت تطبيق المحاسب</h4>
+                <p>تصفح سريع وسهل الوصول من شاشتك الرئيسية</p>
+            </div>
+        </div>
+        <div class="install-actions">
+            <button class="btn-install-now" onclick="installApp()">تثبيت</button>
+            <button class="btn-install-close" onclick="closeInstallBanner()">إغلاق</button>
+        </div>
+    </div>
 </body>
 
 </html>

@@ -4,8 +4,10 @@ const ASSETS = [
     './index.html',
     './login.html',
     './css/style.css',
-    './js/auth.js',
-    './img/logo.jpg'
+    './js/appwrite-config.js',
+    './js/db-appwrite.js',
+    './img/logo.jpg',
+    './manifest.json'
 ];
 
 // Install Event
