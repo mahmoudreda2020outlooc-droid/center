@@ -101,6 +101,17 @@
             box-shadow: 0 4px 10px rgba(13, 71, 161, 0.2);
         }
 
+        .btn-install-header {
+            background: linear-gradient(135deg, #d4af37, #b8860b);
+            color: white;
+            box-shadow: 0 4px 10px var(--accent-glow);
+            display: none;
+            /* Hidden by default */
+            border: none;
+            cursor: pointer;
+            font-family: inherit;
+        }
+
         .btn-nav:hover {
             transform: translateY(-2px);
             opacity: 0.95;
@@ -442,6 +453,9 @@
             <a href="https://wa.me/201027783480" target="_blank" class="btn-nav btn-whatsapp">
                 تواصل معنا
             </a>
+            <button id="header-install-btn" class="btn-nav btn-install-header" onclick="installApp()">
+                تحميل التطبيق 📥
+            </button>
             <a href="login.html" class="btn-nav btn-login">
                 تسجيل الدخول
             </a>
@@ -524,6 +538,9 @@
         function installApp() {
             if (!deferredPrompt) return;
             installBanner.style.display = 'none';
+            const headerInstallBtn = document.getElementById('header-install-btn');
+            if (headerInstallBtn) headerInstallBtn.style.display = 'none';
+
             deferredPrompt.prompt();
             deferredPrompt.userChoice.then((choiceResult) => {
                 if (choiceResult.outcome === 'accepted') {
