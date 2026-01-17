@@ -171,12 +171,21 @@ window.dbUserAdd = async (user) => {
         let email = user.email || "";
 
         // Robust Auto-fix: Ensure email is a valid format and only ASCII for Appwrite
-        const isEmailValid = (em) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(em) && /^[\x00-\x7F]*$/.test(em);
+        const isEmailValid = (em) => {
+            if (!em || typeof em !== 'string') return false;
+            // Standard email regex + ASCII only check
+            const emailRegex = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
+            return emailRegex.test(em) && /^[\x00-\x7F]*$/.test(em);
+        };
 
         if (!isEmailValid(email)) {
-            const safeUsername = (user.username || "student").replace(/[^\x00-\x7F]/g, "") || user.id || "user" + Math.floor(Math.random() * 1000);
-            email = `${safeUsername}@batucenter.com`;
-            console.log(`🧹 Auto-formatting invalid email to: ${email}`);
+            // Remove everything except ASCII letters and numbers to form a safe local part
+            let safePart = (user.username || "").replace(/[^a-zA-Z0-9]/g, "");
+            // If empty (e.g. Arabic username), use the ID or a random string
+            if (!safePart) safePart = "std_" + docId;
+
+            email = `${safePart}@batucenter.com`;
+            console.log(`🧹 Auto-formatting invalid or missing email to: ${email}`);
         }
 
         const data = {
