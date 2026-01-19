@@ -714,16 +714,16 @@
                         </div>
                     </div>
                     <div style="display:flex; gap:5px; flex-wrap:wrap; justify-content:flex-end; max-width: 150px;">
-                         <button class="delete-btn" style="color:white; background:#007bff; padding:2px 8px; font-size:0.8rem; border-radius:4px;" onclick="openPermissionsModal(${user.id}, '${user.username}', '${user.permittedSubjects || ''}')">
+                         <button class="delete-btn" style="color:white; background:#007bff; padding:2px 8px; font-size:0.8rem; border-radius:4px;" onclick="openPermissionsModal('${user.id}', '${user.username}', '${user.permittedSubjects || ''}')">
                             المواد 📖
                         </button>
                          ${hasDevice ?
-                        `<button class="delete-btn" style="color:#333; background:#e0e0e0; padding:2px 6px; font-size:0.8rem; border-radius:4px;" onclick="resetDevice(${user.id})">فك الجهاز 🔓</button>`
+                        `<button class="delete-btn" style="color:#333; background:#e0e0e0; padding:2px 6px; font-size:0.8rem; border-radius:4px;" onclick="resetDevice('${user.id}')">فك الجهاز 🔓</button>`
                         : ''}
-                        <button class="delete-btn" style="color:black; background:${toggleBtnColor}; padding:2px 8px; font-size:0.8rem; border-radius:4px;" onclick="toggleUserSuspension(${user.id}, ${!isSuspended})">
+                        <button class="delete-btn" style="color:black; background:${toggleBtnColor}; padding:2px 8px; font-size:0.8rem; border-radius:4px;" onclick="toggleUserSuspension('${user.id}', ${!isSuspended})">
                             ${toggleBtnText}
                         </button>
-                        <button class="delete-btn" onclick="deleteUser(${user.id})" title="حذف نهائي">🗑️</button>
+                        <button class="delete-btn" onclick="deleteUser('${user.id}')" title="حذف نهائي">🗑️</button>
                     </div>
                 `;
                 list.appendChild(div);
