@@ -853,6 +853,14 @@
             const percent = Math.round((score / currentExam.questions.length) * 100);
             const userId = localStorage.getItem('user_id');
 
+            // Feedback message based on score
+            let feedbackMsg = "";
+            if (percent >= 50) {
+                feedbackMsg = `<p style="color: #2e7d32; font-weight: bold; margin-bottom: 15px;">بطل يا وحش! عاش جداً، كمل ومستواك في تحسن مستمر. 🔥</p>`;
+            } else {
+                feedbackMsg = `<p style="color: #c62828; font-weight: bold; margin-bottom: 15px;">ولايهمك يا بطل، دي مجرد بداية. ذاكر الأخطاء دي كويس وهتكسر الدنيا المرة الجاية! 💪</p>`;
+            }
+
             // Save final result
             try {
                 await window.ExamsBuilder.saveExamResult(userId, currentExam.$id, score, currentExam.questions.length);
@@ -865,7 +873,8 @@
                 <div style="text-align:center; padding:1rem; border-bottom: 2px solid #0d47a1; margin-bottom: 2rem;">
                     <div style="font-size:3rem;">${percent >= 50 ? '🎉' : '😕'}</div>
                     <h2>نتيجتك: ${score} من ${currentExam.questions.length}</h2>
-                    <p style="font-size:1.5rem; color:${percent >= 50 ? 'green' : 'red'}; font-weight:bold;">${percent}%</p>
+                    <p style="font-size:1.5rem; color:${percent >= 50 ? 'green' : 'red'}; font-weight:bold; margin-bottom:10px;">${percent}%</p>
+                    ${feedbackMsg}
                     <button class="action-btn" style="margin-top:10px;" onclick="location.reload()">إغلاق وإنهاء</button>
                 </div>
                 <div style="max-height: 50vh; overflow-y: auto; padding-right: 10px;">
